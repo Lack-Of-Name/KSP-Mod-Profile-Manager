@@ -196,6 +196,7 @@ This project is licensed under the MIT License
 - The KSP modding community for inspiration
 - Contributors and testers
 - Squad/Private Division for Kerbal Space Program
+- https://Claude.ai
 
 ## Support
 
