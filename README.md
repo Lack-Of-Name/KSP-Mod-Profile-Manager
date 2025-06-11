@@ -6,11 +6,15 @@ A powerful and user-friendly mod profile manager for Kerbal Space Program that a
 
 ### 🚀 **Multi-Instance Support**
 - Manage multiple KSP installations simultaneously
-- Automatic KSP installation validation
+- Automatic KSP installation validation with comprehensive checks
 - Support for different KSP versions and installations
+- Smart executable detection (KSP.exe, KSP_x64.exe, etc.)
 
-### 📋 **Profile Management**
+### 📋 **Enhanced Profile Management**
 - Create unlimited mod profiles for different gameplay styles
+- **NEW**: Choose between blank profiles or select from cached mods when creating
+- **NEW**: Advanced mod selection dialog with search and filtering
+- **NEW**: Manage existing profile mods with intuitive interface
 - Apply profiles with a single click
 - Update profiles from your current GameData setup
 - Visual mod list display for each profile
@@ -20,15 +24,20 @@ A powerful and user-friendly mod profile manager for Kerbal Space Program that a
 - Safe file operations with comprehensive error handling
 - Preserve stock KSP files (Squad, SquadExpansion folders)
 - Natural sorting for better mod organization
+- **NEW**: Clean up unused mods functionality
 
 ### 🛡️ **Backup & Safety**
 - Create zip backups of your GameData folder
 - Rollback protection with atomic operations
 - Clean removal of unused mods
 - Comprehensive validation before operations
+- Enhanced error handling and recovery
 
 ### 🎯 **Quality of Life**
-- Intuitive GUI with tooltips
+- **NEW**: Color-coded UI with intuitive button styling
+- **NEW**: Enhanced tooltips for better user guidance
+- **NEW**: Improved mod selection dialog with persistent selections
+- **NEW**: Search and filter functionality in mod selection
 - Status updates during operations
 - Cross-platform compatibility (Windows focus)
 - Elevated privileges handling for protected installations
@@ -57,22 +66,53 @@ python main.py #-d switch if errors
 ## Usage
 
 ### Setting Up Your First Instance
-1. Click the **"+"** button next to the instance dropdown
+1. Click the **"+"** button (light green) next to the instance dropdown
 2. Select your KSP executable (KSP.exe, KSP_x64.exe, etc.)
-3. The tool will automatically validate your installation
+3. The tool will automatically validate your installation and detect GameData
 4. Give your instance a memorable name
 
 ### Creating Profiles
 1. Select your KSP instance
-2. Click the **"+"** button next to the profile dropdown
-3. Choose to create a **blank profile** or **select from cached mods**
+2. Click the **"+"** button (light green) next to the profile dropdown
+3. Choose your creation method:
+   - **Create Blank Profile**: Start with an empty profile
+   - **Choose from Cached Mods**: Select from available mods in your mods folder
 4. Name your profile and configure as needed
 
-### Managing Mods
-- **Apply Profile**: Replaces your GameData with the selected profile's mods
-- **Update Profile**: Updates the selected profile with your current GameData contents
-- **Backup GameData**: Creates a timestamped zip backup
-- **Clean Up Unused Mods**: Removes mods not referenced in any profile
+### Managing Profile Mods
+- **Manage Profile Mods** (salmon button): Add or remove mods from the selected profile
+- Use the search functionality to quickly find mods
+- Select/deselect multiple mods with "Select All" and "Select None" buttons
+- Real-time filtering maintains your selections
+
+### Core Operations
+- **Apply Selected Profile** (royal blue): Replaces your GameData with the selected profile's mods
+- **Update Profile from GameData** (violet): Updates the selected profile with your current GameData contents
+- **Backup GameData** (default): Creates a timestamped zip backup
+- **Clean Up Unused Mods** (default): Removes mods not referenced in any profile
+
+## New Features in This Version
+
+### 🎨 **Enhanced User Interface**
+- Color-coded buttons for better visual organization
+- Improved button styling and layout
+- Enhanced tooltips with detailed descriptions
+
+### 🔍 **Advanced Mod Selection**
+- Interactive mod selection dialog with search functionality
+- Persistent selections that maintain state during filtering
+- Real-time mod counting and selection feedback
+- Support for large mod collections
+
+### 🛠️ **Improved Profile Management**
+- Two methods for profile creation (blank or from cached mods)
+- Direct profile mod management without recreating profiles
+- Better handling of profile updates and modifications
+
+### 🧹 **Cleanup Tools**
+- Automatic detection of unused mods across all profiles
+- Safe removal with user confirmation
+- Detailed feedback during cleanup operations
 
 ## Directory Structure
 
@@ -93,11 +133,12 @@ ksp-mod-manager/
 
 ## Safety Features
 
+- **Enhanced Validation**: Comprehensive KSP installation validation
 - **Automatic Backups**: Always backup before major operations
-- **Stock File Protection**: Never modifies core KSP files
-- **Validation Checks**: Verifies KSP installations and mod integrity
+- **Stock File Protection**: Never modifies core KSP files (Squad, SquadExpansion)
 - **Atomic Operations**: All-or-nothing profile applications
 - **Error Recovery**: Comprehensive error handling and reporting
+- **Permission Handling**: Automatic elevation for protected directories
 
 ## Debug Mode
 
@@ -111,9 +152,18 @@ python main.py -d
 This application requires elevated privileges on Windows to manage files in protected directories (like Program Files). 
 
 **VirusTotal Scan**: 
-https://www.virustotal.com/gui/file/368e9086beeb44a6a4831d28bcc00e6dcc3a971133f06dc28944d532bb73fcd9?nocache=1
+(https://www.virustotal.com/gui/file/2528a323ba6f860df870a91dda96e5eef6818855e01a96bad58a8b61ae58d563?nocache=1)
 
 The application will automatically request administrator rights when needed. This is normal and required for proper operation with KSP installations in system directories.
+
+## UI Color Guide
+
+- **Light Green (+)**: Add new instances or profiles
+- **Red (−)**: Remove/delete operations
+- **Royal Blue**: Primary actions (Apply Profile)
+- **Violet**: Update operations
+- **Light Salmon**: Management operations
+- **Default Gray**: Utility operations (Backup, Cleanup)
 
 ## Compatibility
 
@@ -164,14 +214,17 @@ Contributions are welcome! Here's how you can help:
 - Test with multiple KSP versions when possible
 - Consider cross-platform compatibility
 - Update tooltips and help text for new features
+- Maintain color consistency in UI elements
 
 ## Roadmap
-Date TBD
+
 - [ ] Mod dependency management
 - [ ] Profile sharing and templates
 - [ ] Enhanced mod conflict detection
 - [ ] Configuration file management
 - [ ] Automated mod updates
+- [ ] Drag-and-drop mod organization
+- [ ] Profile comparison tools
 
 ## FAQ
 
@@ -186,6 +239,12 @@ A: Save files are never touched. This tool only manages the GameData folder.
 
 **Q: Is it safe?**
 A: Yes, the tool includes multiple safety features including automatic backups and validation checks.
+
+**Q: How do I search for mods when creating profiles?**
+A: Use the search box in the mod selection dialog - it filters mods in real-time while preserving your selections.
+
+**Q: Can I modify an existing profile?**
+A: Yes! Use the "Manage Profile Mods" button to add or remove mods from any existing profile.
 
 ## License
 
