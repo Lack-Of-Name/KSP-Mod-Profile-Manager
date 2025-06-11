@@ -29,6 +29,7 @@ class ModSelectionDialog:
     def __init__(self, parent, available_mods, title="Select Mods"):
         self.result = None
         self.selected_mods = []
+        self.persistent_selections = set()  # Track selected mods across filtering
         
         # Create dialog window
         self.dialog = tk.Toplevel(parent)
@@ -102,7 +103,7 @@ class ModSelectionDialog:
         cancel_btn = tk.Button(bottom_frame, text="Cancel", command=self.cancel)
         cancel_btn.pack(side="right", padx=5)
         
-        ok_btn = tk.Button(bottom_frame, text="Create Profile", command=self.ok, bg="lightgreen")
+        ok_btn = tk.Button(bottom_frame, text="Save Changes", command=self.ok, bg="lightgreen")
         ok_btn.pack(side="right", padx=5)
         
         # Selected count label
@@ -118,12 +119,34 @@ class ModSelectionDialog:
             self.mods_listbox.insert(tk.END, mod)
             
     def filter_mods(self, *args):
+        # Update persistent selections with current state
+        selected_indices = self.mods_listbox.curselection()
+        currently_selected = [self.mods_listbox.get(i) for i in selected_indices]
+        
+        # Update our persistent selection set
+        self.persistent_selections.update(currently_selected)
+        
+        # Remove any deselected items
+        all_visible = [self.mods_listbox.get(i) for i in range(self.mods_listbox.size())]
+        for mod in all_visible:
+            if mod not in currently_selected:
+                self.persistent_selections.discard(mod)
+        
+        # Filter mods
         search_term = self.search_var.get().lower()
         if not search_term:
             filtered_mods = self.all_mods
         else:
             filtered_mods = [mod for mod in self.all_mods if search_term in mod.lower()]
+        
         self.populate_mods(filtered_mods)
+        
+        # Re-select mods that should be selected
+        for i, mod in enumerate(filtered_mods):
+            if mod in self.persistent_selections:
+                self.mods_listbox.selection_set(i)
+        
+        self.update_selection_count()
         
     def select_all(self):
         self.mods_listbox.selection_set(0, tk.END)
@@ -138,9 +161,18 @@ class ModSelectionDialog:
         self.count_label.config(text=f"{count} mods selected")
         
     def ok(self):
-        # Get selected mods
+        # Update persistent selections one final time
         selected_indices = self.mods_listbox.curselection()
-        self.selected_mods = [self.mods_listbox.get(i) for i in selected_indices]
+        currently_selected = [self.mods_listbox.get(i) for i in selected_indices]
+        
+        # Update persistent selections
+        self.persistent_selections.update(currently_selected)
+        all_visible = [self.mods_listbox.get(i) for i in range(self.mods_listbox.size())]
+        for mod in all_visible:
+            if mod not in currently_selected:
+                self.persistent_selections.discard(mod)
+        
+        self.selected_mods = list(self.persistent_selections)
         self.result = "ok"
         self.dialog.destroy()
         
@@ -687,7 +719,7 @@ class App:
         actions_frame = tk.Frame(root)
         actions_frame.grid(row=1, column=0, columnspan=2, sticky="ew")
 
-        btn_apply = tk.Button(actions_frame, text="Apply Selected Profile", command=self.apply, width=UI_WIDTH, font=UI_FONT)
+        btn_apply = tk.Button(actions_frame, text="Apply Selected Profile", fg="white", bg="royalblue", command=self.apply, width=UI_WIDTH, font=UI_FONT)
         btn_apply.grid(row=0, column=0, sticky="ew")
         Tooltip(btn_apply, "Apply the selected profile's mods to the GameData folder")
 
@@ -695,13 +727,17 @@ class App:
         btn_backup.grid(row=0, column=1, sticky="ew")
         Tooltip(btn_backup, "Create a zip backup of the current GameData folder")
 
-        btn_update_profile = tk.Button(actions_frame, text="Update Profile from GameData", command=self.update_profile, width=UI_WIDTH, font=UI_FONT)
+        btn_update_profile = tk.Button(actions_frame, text="Update Profile from GameData", fg="white", bg="violet", command=self.update_profile, width=UI_WIDTH, font=UI_FONT)
         btn_update_profile.grid(row=1, column=0, sticky="ew")
         Tooltip(btn_update_profile, "Update the selected profile with current GameData contents")
 
         btn_cleanup_mods = tk.Button(actions_frame, text="Clean Up Unused Mods", command=self.cleanup_unused_mods, width=UI_WIDTH, font=UI_FONT)
         btn_cleanup_mods.grid(row=1, column=1, sticky="ew")
         Tooltip(btn_cleanup_mods, "Remove mods from the mods folder that aren't used in any profile")
+
+        btn_manage_mods = tk.Button(actions_frame, text="Manage Profile Mods", fg="white", bg="lightsalmon", command=self.manage_profile_mods, width=UI_WIDTH, font=UI_FONT)
+        btn_manage_mods.grid(row=2, column=0, sticky="ew")
+        Tooltip(btn_manage_mods, "Add or remove mods from the selected profile")
 
         self.status_label = tk.Label(root, text="Ready", fg="blue", font=UI_FONT)
         self.status_label.grid(row=2, column=0, columnspan=2, sticky="ew")
@@ -829,6 +865,53 @@ class App:
 
     def new_profile(self):
         return new_profile_enhanced(self)
+
+    def manage_profile_mods(self):
+        instance = self.instance_var.get()
+        profile = self.profile_var.get()
+        if not instance or not profile:
+            return messagebox.showerror("Error", "Select instance and profile")
+        
+        # Get available mods from mods folder
+        available_mods = []
+        if MODS_DIR.exists():
+            available_mods = [item.name for item in MODS_DIR.iterdir() 
+                            if item.is_dir() or item.is_file()]
+        
+        if not available_mods:
+            messagebox.showinfo("No Mods", "No mods found in the mods folder. Add some mods first.")
+            return
+        
+        # Load current profile mods
+        profile_file = PROFILES_DIR / instance / f"{profile}.json"
+        current_mods = []
+        if profile_file.exists():
+            with open(profile_file) as f:
+                current_mods = json.load(f)
+        
+        # Show mod selection dialog with current mods pre-selected
+        dialog = ModSelectionDialog(self.root, available_mods, f"Manage Mods for '{profile}'")
+        
+        # Pre-select current mods
+        dialog.persistent_selections = set(current_mods)
+        for i, mod in enumerate(dialog.all_mods):
+            if mod in current_mods:
+                dialog.mods_listbox.selection_set(i)
+        dialog.update_selection_count()
+        
+        result_action, selected_mods = dialog.show()
+        
+        if result_action == "ok":
+            # Save the updated profile
+            save_profile(instance, profile, selected_mods)
+            
+            # Refresh the mods display
+            self.show_profile_mods(instance, profile)
+            
+            messagebox.showinfo(
+                "Profile Updated", 
+                f"Profile '{profile}' now contains {len(selected_mods)} mod(s)."
+            )
 
     def new_instance(self):
         # Use file dialog to select KSP executable
